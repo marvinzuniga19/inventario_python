@@ -16,8 +16,12 @@ class Usuario(UserMixin, db.Model):
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
     fecha_ultimo_login = db.Column(db.DateTime)
     
+    # Moneda preferida del usuario
+    moneda_preferida_id = db.Column(db.Integer, db.ForeignKey('monedas.id'), default=1)
+    
     # Relaciones
     movimientos = db.relationship('Movimiento', backref='usuario', lazy=True)
+    moneda_preferida = db.relationship('Moneda', foreign_keys=[moneda_preferida_id], back_populates='usuarios_preferencia')
     
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -27,6 +31,15 @@ class Usuario(UserMixin, db.Model):
     
     def get_nombre_completo(self):
         return f"{self.nombre} {self.apellido}"
+    
+    def get_moneda_preferida(self):
+        """Obtener la moneda preferida del usuario o la default del sistema"""
+        if self.moneda_preferida and self.moneda_preferida.activo:
+            return self.moneda_preferida
+        else:
+            # Si el usuario no tiene moneda preferida o está inactiva, usar la default
+            from .moneda import Moneda
+            return Moneda.get_default()
     
     def __repr__(self):
         return f'<Usuario {self.email}>'

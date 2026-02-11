@@ -21,7 +21,11 @@
             <div class="stats-icon success">
                 <i class="bi bi-currency-dollar"></i>
             </div>
-            <div class="stats-value">${{ "{:,.0f}".format(valor_total) }}</div>
+            <div class="stats-value">
+    <span class="valor-inventario-moneda" data-valor-base="{{ valor_total }}">
+        {{ formato_precio_usuario(valor_total) }}
+    </span>
+</div>
             <div class="stats-label">Valor del Inventario</div>
         </div>
     </div>

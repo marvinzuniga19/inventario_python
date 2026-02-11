@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block page_title %}Estadísticas de Monedas{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>
+                    <i class="bi bi-graph-up"></i>
+                    Estadísticas de Monedas
+                </h2>
+                <a href="{{ url_for('monedas.configuracion') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i>
+                    Volver a Configuración
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resumen General -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon primary">
+                    <i class="bi bi-currency-exchange"></i>
+                </div>
+                <div class="stats-value">{{ total_monedas }}</div>
+                <div class="stats-label">Monedas Activas</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card success">
+                <div class="stats-icon success">
+                    <i class="bi bi-graph-up-arrow"></i>
+                </div>
+                <div class="stats-value">{{ total_tasas }}</div>
+                <div class="stats-label">Tasas de Cambio</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card info">
+                <div class="stats-icon info">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+                <div class="stats-value">{{ resumen.moneda_default.codigo if resumen.moneda_default else 'N/A' }}</div>
+                <div class="stats-label">Moneda Default</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card warning">
+                <div class="stats-icon warning">
+                    <i class="bi bi-clock"></i>
+                </div>
+                <div class="stats-value">Semanal</div>
+                <div class="stats-label">Frecuencia Actualización</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monedas Configuradas -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-list-ul"></i>
+                        Monedas Configuradas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if resumen.monedas %}
+                    <div class="list-group">
+                        {% for moneda in resumen.monedas %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">
+                                    <strong>{{ moneda.simbolo }}</strong> {{ moneda.nombre }}
+                                </h6>
+                                <small class="text-muted">Código: {{ moneda.codigo }} | Locale: {{ moneda.locale }}</small>
+                            </div>
+                            <div>
+                                {% if moneda.es_default %}
+                                <span class="badge bg-primary">Default</span>
+                                {% endif %}
+                                {% if moneda.activo %}
+                                <span class="badge bg-success">Activa</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Inactiva</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        No hay monedas configuradas.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasas de Cambio -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-graph-up-arrow"></i>
+                        Tasas de Cambio Activas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if resumen.tasas_cambio %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Par de Monedas</th>
+                                    <th class="text-end">Tasa</th>
+                                    <th>Actualización</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for codigo, datos in resumen.tasas_cambio.items() %}
+                                <tr>
+                                    <td>NIO → {{ codigo }}</td>
+                                    <td class="text-end">{{ datos.tasa }}</td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ datos.fecha_actualizacion[:16] if datos.fecha_actualizacion else 'N/A' }}
+                                        </small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        No hay tasas de cambio configuradas.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Uso del Sistema -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-people"></i>
+                        Uso del Sistema por Moneda
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Preferencias de Usuarios</h6>
+                            <div id="userPreferencesChart" style="height: 300px;">
+                                <canvas id="preferencesChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Distribución de Productos</h6>
+                            <div id="productsDistributionChart" style="height: 300px;">
+                                <canvas id="distributionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gráfico de Preferencias de Usuarios
+    const preferencesCtx = document.getElementById('preferencesChart').getContext('2d');
+    new Chart(preferencesCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [{% for moneda in resumen.monedas %}'{{ moneda.nombre }}'{% if not loop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                data: [{% for moneda in resumen.monedas %}{{ loop.index * 10 }}{% if not loop.last %},{% endif %}{% endfor %}], // Datos de ejemplo
+                backgroundColor: [
+                    '#007bff', '#28a745', '#ffc107', '#dc3545', '#6c757d'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Gráfico de Distribución de Productos
+    const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+    new Chart(distributionCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for moneda in resumen.monedas %}'{{ moneda.codigo }}'{% if not loop.last %},{% endif %}{% endfor %}],
+            datasets: [{
+                label: 'Productos',
+                data: [{% for moneda in resumen.monedas %}{{ loop.index * 5 }}{% if not loop.last %},{% endif %}{% endfor %}], // Datos de ejemplo
+                backgroundColor: '#007bff',
+                borderColor: '#0056b3',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

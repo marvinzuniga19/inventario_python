@@ -39,7 +39,11 @@
             <div class="stats-icon success">
                 <i class="bi bi-currency-dollar"></i>
             </div>
-            <div class="stats-value">${{ "{:,.0f}".format(stats.valor_total) }}</div>
+            <div class="stats-value">
+    <span class="valor-total-moneda" data-valor-base="{{ stats.valor_total }}">
+        {{ formato_precio_usuario(stats.valor_total) }}
+    </span>
+</div>
             <div class="stats-label">Valor Total</div>
         </div>
     </div>
@@ -135,7 +139,13 @@
                             <span class="category-color" style="background-color: {{ producto.categoria.color }}"></span>
                             {{ producto.categoria.nombre }}
                         </td>
-                        <td class="text-end">${{ "{:,.0f}".format(producto.precio) }}</td>
+                        <td class="text-end">
+    <span class="precio-moneda" 
+          data-precio-base="{{ producto.precio_base }}" 
+          data-moneda-origen="{{ producto.moneda_original.codigo if producto.moneda_original else 'NIO' }}">
+        {{ producto.get_precio_formateado(moneda_actual) }}
+    </span>
+</td>
                         <td>
                             <span class="fw-bold">{{ producto.cantidad_stock }}</span>
                             <br><small class="text-muted">Min: {{ producto.umbral_minimo }}</small>

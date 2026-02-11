@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block page_title %}Configuración de Monedas{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>
+                    <i class="bi bi-currency-exchange"></i>
+                    Configuración de Monedas
+                </h2>
+                <div>
+                    <button class="btn btn-primary" onclick="location.href='{{ url_for('monedas.actualizar_tasas') }}'">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        Actualizar Tasas
+                    </button>
+                    <a href="{{ url_for('monedas.estadisticas') }}" class="btn btn-info">
+                        <i class="bi bi-graph-up"></i>
+                        Estadísticas
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Moneda Actual -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-wallet2"></i>
+                        Moneda Actual
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if moneda_actual %}
+                    <div class="display-4 mb-3">{{ moneda_actual.simbolo }}</div>
+                    <h4>{{ moneda_actual.nombre }}</h4>
+                    <p class="text-muted">Código: {{ moneda_actual.codigo }}</p>
+                    <p class="text-muted">Locale: {{ moneda_actual.locale }}</p>
+                    
+                    {% if moneda_actual.es_default %}
+                    <span class="badge bg-primary">Moneda Default del Sistema</span>
+                    {% endif %}
+                    
+                    <div class="mt-3">
+                        <small class="text-muted">Ejemplo de formato:</small>
+                        <div class="h5">{{ formato_precio_usuario(1234.56) }}</div>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No hay moneda configurada</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Monedas Disponibles -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-list-ul"></i>
+                        Monedas Disponibles
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if monedas %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Moneda</th>
+                                    <th>Código</th>
+                                    <th>Locale</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for moneda in monedas %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ moneda.simbolo }}</strong> {{ moneda.nombre }}
+                                    </td>
+                                    <td><code>{{ moneda.codigo }}</code></td>
+                                    <td><code>{{ moneda.locale }}</code></td>
+                                    <td>
+                                        {% if moneda.es_default %}
+                                        <span class="badge bg-primary">Default</span>
+                                        {% endif %}
+                                        {% if moneda.id == (current_user.get_moneda_preferida().id if current_user.is_authenticated else 0) %}
+                                        <span class="badge bg-success">Actual</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if moneda.id != (current_user.get_moneda_preferida().id if current_user.is_authenticated else 0) %}
+                                        <button class="btn btn-sm btn-outline-primary cambiar-moneda-btn"
+                                                data-moneda-id="{{ moneda.id }}"
+                                                data-moneda-codigo="{{ moneda.codigo }}"
+                                                data-moneda-nombre="{{ moneda.nombre }}">
+                                            <i class="bi bi-check-circle"></i>
+                                            Seleccionar
+                                        </button>
+                                        {% else %}
+                                        <span class="text-success">
+                                            <i class="bi bi-check-circle-fill"></i> Activa
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        No hay monedas configuradas en el sistema.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tasas de Cambio -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-graph-up-arrow"></i>
+                        Tasas de Cambio Actuales
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if tasas_cambio %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Moneda</th>
+                                    <th>Tasa (1 NIO)</th>
+                                    <th>Última Actualización</th>
+                                    <th>Ejemplo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for codigo, datos in tasas_cambio.items() %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ datos.moneda_destino.simbolo }}</strong> {{ datos.moneda_destino.nombre }}
+                                    </td>
+                                    <td class="text-end">{{ datos.tasa }}</td>
+                                    <td>{{ datos.fecha_actualizacion[:19] if datos.fecha_actualizacion else 'N/A' }}</td>
+                                    <td>
+                                        <small>
+                                            100 NIO = {{ formato_precio_usuario(100 * datos.tasa) }}
+                                        </small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        No hay tasas de cambio configuradas. 
+                        <a href="{{ url_for('monedas.actualizar_tasas') }}" class="alert-link">Actualizar ahora</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Botones para cambiar moneda
+    document.querySelectorAll('.cambiar-moneda-btn').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const monedaId = this.getAttribute('data-moneda-id');
+            const monedaCodigo = this.getAttribute('data-moneda-codigo');
+            const monedaNombre = this.getAttribute('data-moneda-nombre');
+            
+            if (confirm(`¿Cambiar tu moneda preferida a ${monedaNombre} (${monedaCodigo})?`)) {
+                try {
+                    const formData = new FormData();
+                    formData.append('moneda_id', monedaId);
+                    
+                    const response = await fetch('{{ url_for("monedas.cambiar_moneda_usuario") }}', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        // Mostrar mensaje de éxito
+                        const toast = new bootstrap.Toast(document.querySelector('.toast') || createToast(data.message, 'success'));
+                        toast.show();
+                        
+                        // Recargar página después de un momento
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        const error = await response.json();
+                        alert('Error: ' + error.error);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error al cambiar moneda');
+                }
+            }
+        });
+    });
+    
+    function createToast(message, type = 'success') {
+        const toastHtml = `
+            <div class="toast align-items-center text-white bg-${type} border-0" role="alert">
+                <div class="d-flex">
+                    <div class="toast-body">${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            </div>
+        `;
+        
+        let container = document.querySelector('.toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            document.body.appendChild(container);
+        }
+        
+        container.insertAdjacentHTML('beforeend', toastHtml);
+        return container.lastElementChild;
+    }
+});
+</script>
+{% endblock %}

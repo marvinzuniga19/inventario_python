@@ -1,0 +1,117 @@
+<!-- Selector de Moneda -->
+<div class="currency-selector dropdown">
+    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" 
+            type="button" 
+            id="currencyDropdown" 
+            data-bs-toggle="dropdown" 
+            aria-expanded="false">
+        <i class="bi bi-currency-exchange"></i>
+        <span class="currency-symbol">{{ moneda_actual.simbolo if moneda_actual else 'C$' }}</span>
+        <span class="currency-code">{{ moneda_actual.codigo if moneda_actual else 'NIO' }}</span>
+    </button>
+    
+    <ul class="dropdown-menu" aria-labelledby="currencyDropdown">
+        <li><h6 class="dropdown-header">Seleccionar Moneda</h6></li>
+        {% for moneda in monedas_disponibles %}
+        <li>
+            <a class="dropdown-item currency-option" 
+               href="#" 
+               data-moneda-id="{{ moneda.id }}"
+               data-moneda-codigo="{{ moneda.codigo }}"
+               data-moneda-simbolo="{{ moneda.simbolo }}">
+                <span class="moneda-info">
+                    <strong>{{ moneda.simbolo }}</strong> {{ moneda.codigo }}
+                    <small class="text-muted">- {{ moneda.nombre }}</small>
+                </span>
+                {% if moneda.es_default %}
+                <span class="badge bg-primary ms-2">Default</span>
+                {% endif %}
+                {% if moneda.id == (current_user.get_moneda_preferida().id if current_user.is_authenticated else 1) %}
+                <span class="badge bg-success ms-2">Actual</span>
+                {% endif %}
+            </a>
+        </li>
+        {% endfor %}
+        <li><hr class="dropdown-divider"></li>
+        <li>
+            <a class="dropdown-item" href="{{ url_for('monedas.configuracion') }}">
+                <i class="bi bi-gear"></i> Configuración de Monedas
+            </a>
+        </li>
+    </ul>
+</div>
+
+<!-- Loading Overlay (para cambios de moneda) -->
+<div id="currencyLoading" class="currency-loading" style="display: none;">
+    <div class="spinner-border spinner-border-sm" role="status">
+        <span class="visually-hidden">Cargando...</span>
+    </div>
+    <span class="ms-2">Actualizando moneda...</span>
+</div>
+
+<style>
+.currency-selector {
+    position: relative;
+}
+
+.currency-option {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.currency-option:hover {
+    background-color: var(--bs-gray-100);
+}
+
+.currency-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.currency-loading {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.95);
+    padding: 1rem 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .currency-selector .dropdown-menu {
+        min-width: 200px;
+    }
+    
+    .moneda-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+    
+    .moneda-info .badge {
+        margin-left: 0 !important;
+    }
+}
+
+/* Estados */
+.currency-selector .btn {
+    border-color: var(--bs-gray-300);
+    color: var(--bs-gray-700);
+}
+
+.currency-selector .btn:hover {
+    background-color: var(--bs-gray-100);
+    border-color: var(--bs-gray-400);
+}
+
+.currency-selector .dropdown-toggle::after {
+    margin-left: 0.5rem;
+}
+</style>

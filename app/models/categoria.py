@@ -11,7 +11,7 @@ class Categoria(db.Model):
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Relaciones
-    productos = db.relationship('Producto', backref='categoria', lazy=True)
+    productos = db.relationship('Producto', back_populates='categoria', lazy=True)
     
     def __repr__(self):
         return f'<Categoria {self.nombre}>'

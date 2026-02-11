@@ -42,6 +42,9 @@ def create_app(config_name='default'):
     from app.routes.movimientos import movimientos as movimientos_blueprint
     app.register_blueprint(movimientos_blueprint, url_prefix='/movimientos')
     
+    from app.routes.monedas import monedas as monedas_blueprint
+    app.register_blueprint(monedas_blueprint)
+    
     # Crear directorio de uploads si no existe
     import os
     upload_folder = app.config['UPLOAD_FOLDER']
@@ -49,7 +52,7 @@ def create_app(config_name='default'):
         os.makedirs(upload_folder)
     
     # Importar modelos para que SQLAlchemy los reconozca
-    from app.models import usuario, producto, categoria, movimiento
+    from app.models import usuario, producto, categoria, movimiento, moneda, tasa_cambio
     
     # Cargar usuario actual
     @login_manager.user_loader
@@ -75,5 +78,43 @@ def create_app(config_name='default'):
             pass  # Manejar caso de usuario no autenticado
         
         return {'bajo_stock_count': bajo_stock_count}
+    
+    # Procesador de contexto global para monedas
+    @app.context_processor
+    def inject_currency_context():
+        from flask_login import current_user
+        from app.services.currency_service import CurrencyService
+        
+        try:
+            # Obtener moneda actual del usuario o default
+            if current_user and hasattr(current_user, 'is_authenticated') and current_user.is_authenticated:
+                moneda_actual = current_user.get_moneda_preferida()
+            else:
+                from app.models.moneda import Moneda
+                moneda_actual = Moneda.get_default()
+            
+            # Obtener todas las monedas activas
+            monedas_disponibles = CurrencyService.obtener_todas_monedas_activas()
+            
+            # Función de formateo para templates
+            def formato_precio_usuario(monto):
+                if moneda_actual:
+                    return CurrencyService.formatear_precio(monto, moneda_actual.codigo)
+                return CurrencyService.formatear_precio(monto, 'NIO')
+            
+            return {
+                'moneda_actual': moneda_actual,
+                'monedas_disponibles': monedas_disponibles,
+                'formato_precio_usuario': formato_precio_usuario
+            }
+        except:
+            # Valores por defecto en caso de error
+            from app.models.moneda import Moneda
+            moneda_default = Moneda.get_default()
+            return {
+                'moneda_actual': moneda_default,
+                'monedas_disponibles': [moneda_default] if moneda_default else [],
+                'formato_precio_usuario': lambda monto: f"C${monto:,.2f}"
+            }
     
     return app
