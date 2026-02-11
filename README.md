@@ -55,10 +55,11 @@ Una aplicación web moderna y responsiva para la gestión de inventario de peque
 ## 🛠️ Stack Tecnológico
 
 ### Backend
-- **Python 3.8+** con **Flask** como framework principal
+- **Python 3.8+** (compatible con 3.14.2) con **Flask** como framework principal
 - **Flask-SQLAlchemy** para ORM y gestión de base de datos
 - **Flask-Login** para autenticación
 - **Flask-WTF** para formularios seguros
+- **Flask-Migrate** para migraciones de base de datos
 - **SQLite** para base de datos ligera y portable
 
 ### Frontend
@@ -70,40 +71,53 @@ Una aplicación web moderna y responsiva para la gestión de inventario de peque
 ## 📦 Instalación
 
 ### Prerrequisitos
-- Python 3.8 o superior
+- Python 3.8 o superior (probado con Python 3.14.2)
 - pip (gestor de paquetes de Python)
 
 ### Pasos de Instalación
 
 1. **Clonar o descargar el proyecto**
-2. **Crear entorno virtual:**
+
+2. **Crear y activar entorno virtual:**
+   
+   **Linux/macOS:**
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
+   
+   **Windows:**
    ```bash
    python -m venv venv
+   venv\Scripts\activate
    ```
 
-3. **Activar entorno virtual:**
-   - Windows: `venv\Scripts\activate`
-   - Linux/macOS: `source venv/bin/activate`
-
-4. **Instalar dependencias:**
+3. **Instalar dependencias:**
    ```bash
-   pip install Flask Flask-SQLAlchemy Flask-Login Flask-WTF Flask-Migrate Werkzeug WTForms email-validator python-dotenv
+   pip install -r requirements.txt
    ```
 
-5. **Inicializar base de datos:**
+4. **Inicializar base de datos:**
    ```bash
    python init_db.py
    ```
 
-6. **Iniciar aplicación:**
+5. **Iniciar aplicación:**
    ```bash
    python run.py
    ```
 
-7. **Acceder a la aplicación:**
+6. **Acceder a la aplicación:**
    - URL: `http://localhost:5000`
    - Email: `admin@inventario.com`
    - Contraseña: `admin123`
+
+### 📋 Notas Importantes
+
+- **Compatibilidad:** El proyecto es compatible con Python 3.8+ y ha sido probado exitosamente con Python 3.14.2
+- **Entorno virtual:** Es obligatorio usar un entorno virtual para evitar conflictos de dependencias
+- **Instalación automática:** Se recomienda usar `pip install -r requirements.txt` para instalar todas las dependencias con las versiones correctas
+- **Base de datos:** Se crea automáticamente la primera vez que se ejecuta `init_db.py`
 
 ## 📁 Estructura del Proyecto
 
@@ -167,6 +181,11 @@ inventario_app/
 - **Historial completo:** Consulte todos los movimientos con detalles
 
 ## 🔧 Características Técnicas
+
+### 🔧 Configuración del Entorno
+- **Entorno virtual:** El proyecto incluye un entorno virtual configurado (`venv/`) con todas las dependencias necesarias
+- **Gestión de dependencias:** `requirements.txt` con versiones específicas para garantizar compatibilidad
+- **Sistema operativo:** Compatible con Windows, macOS y Linux
 
 ### Base de Datos
 - **SQLite** por defecto (fácil para pequeñas empresas)
