@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }} - Sistema de Inventario{% endblock %}
+
+{% block page_title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">{{ titulo }}</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.id_producto.label(class="form-label") }}
+                                {{ form.id_producto(class="form-select") }}
+                                {% if form.id_producto.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.id_producto.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                {% if producto_seleccionado %}
+                                <small class="text-info">
+                                    <i class="bi bi-info-circle"></i> Producto preseleccionado desde la vista de detalle
+                                </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form.tipo.label(class="form-label") }}
+                                {{ form.tipo(class="form-select", id="tipo-movimiento") }}
+                                {% if form.tipo.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.tipo.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form.cantidad.label(class="form-label") }}
+                                {{ form.cantidad(class="form-control") }}
+                                {% if form.cantidad.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.cantidad.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                {{ form.motivo.label(class="form-label") }}
+                                {{ form.motivo(class="form-control") }}
+                                {% if form.motivo.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {% for error in form.motivo.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.referencia.label(class="form-label") }}
+                        {{ form.referencia(class="form-control") }}
+                        {% if form.referencia.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.referencia.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted">Número de factura, orden de compra, u otra referencia</small>
+                    </div>
+                    
+                    <!-- Vista previa del impacto -->
+                    <div class="alert alert-info" id="vista-previa">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-info-circle"></i> Vista Previa del Movimiento
+                        </h6>
+                        <div id="contenido-previo">
+                            <p class="mb-0">Selecciona un producto para ver el impacto en el stock</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-6">
+                            <a href="{{ url_for('movimientos.lista') }}" class="btn btn-outline-secondary w-100">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-check-circle"></i> 
+                                {% if titulo == 'Nuevo Movimiento' %}
+                                    Registrar Movimiento
+                                {% else %}
+                                    Actualizar Movimiento
+                                {% endif %}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const productoSelect = document.querySelector('#id_producto');
+    const tipoSelect = document.querySelector('#tipo-movimiento');
+    const cantidadInput = document.querySelector('#cantidad');
+    const vistaPrevia = document.getElementById('contenido-previo');
+    
+    // Datos de productos (stock actual)
+    const productos = {};
+    {% for producto in productos %}
+    productos[{{ producto.id }}] = {
+        nombre: "{{ producto.nombre }}",
+        stock: {{ producto.cantidad_stock }},
+        sku: "{{ producto.sku }}"
+    };
+    {% endfor %}
+    
+    // Si hay un producto preseleccionado, actualizar vista previa inmediatamente
+    {% if producto_seleccionado %}
+    setTimeout(() => {
+        actualizarVistaPrevia();
+    }, 100);
+    {% endif %}
+    
+    function actualizarVistaPrevia() {
+        const productoId = parseInt(productoSelect.value);
+        const tipo = tipoSelect.value;
+        const cantidad = parseInt(cantidadInput.value) || 0;
+        
+        if (productoId && productos[productoId]) {
+            const producto = productos[productoId];
+            const stockActual = producto.stock;
+            let stockFinal = stockActual;
+            let mensajeClase = '';
+            let icono = '';
+            
+            if (tipo === 'entrada') {
+                stockFinal = stockActual + cantidad;
+                mensajeClase = 'text-success';
+                icono = 'bi-plus-circle';
+            } else {
+                stockFinal = stockActual - cantidad;
+                mensajeClase = stockFinal < 0 ? 'text-danger' : 'text-warning';
+                icono = 'bi-dash-circle';
+            }
+            
+            vistaPrevia.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>Producto:</strong> ${producto.nombre} (${producto.sku})<br>
+                        <small class="text-muted">Stock actual: ${stockActual} unidades</small>
+                    </div>
+                    <div class="text-center">
+                        <i class="bi ${icono} ${mensajeClase}" style="font-size: 1.5rem;"></i>
+                        <br><small class="${mensajeClase}">
+                            ${tipo === 'entrada' ? '+' : '-'}${cantidad} unidades
+                        </small>
+                    </div>
+                    <div class="text-end">
+                        <strong>Stock final:</strong><br>
+                        <span class="${stockFinal <= 5 ? 'text-danger' : stockFinal <= 10 ? 'text-warning' : 'text-success'}">
+                            ${stockFinal} unidades
+                        </span>
+                    </div>
+                </div>
+                ${stockFinal < 0 ? '<div class="alert alert-danger mt-2 mb-0"><i class="bi bi-exclamation-triangle"></i> No hay suficiente stock disponible para este movimiento</div>' : ''}
+            `;
+        } else {
+            vistaPrevia.innerHTML = '<p class="mb-0">Selecciona un producto para ver el impacto en el stock</p>';
+        }
+    }
+    
+    if (productoSelect && tipoSelect && cantidadInput) {
+        productoSelect.addEventListener('change', actualizarVistaPrevia);
+        tipoSelect.addEventListener('change', actualizarVistaPrevia);
+        cantidadInput.addEventListener('input', actualizarVistaPrevia);
+        
+        // Vista previa inicial
+        actualizarVistaPrevia();
+    }
+});
+</script>
+{% endblock %}

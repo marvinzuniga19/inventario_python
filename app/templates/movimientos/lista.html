@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Movimientos - Sistema de Inventario{% endblock %}
+
+{% block page_title %}Movimientos de Stock{% endblock %}
+
+{% block content %}
+<!-- Barra de Herramientas -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h5 class="mb-0">Historial de Movimientos{{ titulo_filtro }}</h5>
+                <p class="text-muted mb-0">
+                    {% if producto_filtro %}
+                        Movimientos del producto filtrado
+                    {% else %}
+                        Registro completo de entradas y salidas de inventario
+                    {% endif %}
+                </p>
+            </div>
+            <div class="col-md-4 text-end">
+                {% if producto_filtro %}
+                <a href="{{ url_for('movimientos.lista') }}" class="btn btn-outline-secondary me-2">
+                    <i class="bi bi-arrow-clockwise"></i> Ver Todos
+                </a>
+                {% endif %}
+                <a href="{{ url_for('movimientos.nuevo') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Nuevo Movimiento
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de Movimientos -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Historial</h5>
+    </div>
+    <div class="card-body">
+        {% if movimientos.items %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Motivo</th>
+                        <th>Usuario</th>
+                        <th>Referencia</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for movimiento in movimientos.items %}
+                    <tr>
+                        <td>
+                            {{ movimiento.fecha.strftime('%d/%m/%Y') }}
+                            <br><small class="text-muted">{{ movimiento.fecha.strftime('%H:%M:%S') }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ movimiento.get_tipo_clase() }}">
+                                <i class="bi {{ movimiento.get_tipo_icono() }}"></i>
+                                {{ movimiento.tipo.title() }}
+                            </span>
+                        </td>
+                        <td>
+                            <strong>{{ movimiento.producto.nombre }}</strong>
+                            <br><small class="text-muted">{{ movimiento.producto.sku }}</small>
+                        </td>
+                        <td>
+                            <span class="fw-bold {% if movimiento.tipo == 'entrada' %}text-success{% else %}text-danger{% endif %}">
+                                {% if movimiento.tipo == 'entrada' %}+{% endif %}{{ movimiento.cantidad }}
+                            </span>
+                            <br><small class="text-muted">
+                                Stock: {{ movimiento.producto.cantidad_stock }}
+                            </small>
+                        </td>
+                        <td>{{ movimiento.motivo }}</td>
+                        <td>{{ movimiento.usuario.nombre }} {{ movimiento.usuario.apellido }}</td>
+                        <td>
+                            {% if movimiento.referencia %}
+                            <code>{{ movimiento.referencia }}</code>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Paginación -->
+        {% if movimientos.pages > 1 %}
+        <nav aria-label="Paginación de movimientos">
+            <ul class="pagination justify-content-center">
+                {% if movimientos.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('movimientos.lista', page=movimientos.prev_num) }}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for page_num in movimientos.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != movimientos.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('movimientos.lista', page=page_num) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if movimientos.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('movimientos.lista', page=movimientos.next_num) }}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-arrow-left-right text-muted" style="font-size: 3rem;"></i>
+            <h5 class="text-muted mt-3">No hay movimientos registrados</h5>
+            <p class="text-muted">Comienza registrando tu primer movimiento de stock</p>
+            <a href="{{ url_for('movimientos.nuevo') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nuevo Movimiento
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Estadísticas -->
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="stats-icon success">
+                <i class="bi bi-plus-circle"></i>
+            </div>
+            <div class="stats-value">{{ movimientos.items|selectattr('tipo', 'equalto', 'entrada')|list|length }}</div>
+            <div class="stats-label">Entradas</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card danger">
+            <div class="stats-icon danger">
+                <i class="bi bi-dash-circle"></i>
+            </div>
+            <div class="stats-value">{{ movimientos.items|selectattr('tipo', 'equalto', 'salida')|list|length }}</div>
+            <div class="stats-label">Salidas</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card primary">
+            <div class="stats-icon primary">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <div class="stats-value">{{ movimientos.total }}</div>
+            <div class="stats-label">Total Movimientos</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card info">
+            <div class="stats-icon info">
+                <i class="bi bi-calendar"></i>
+            </div>
+            <div class="stats-value">
+                {% set dias_unicos = [] %}
+                {% for movimiento in movimientos.items %}
+                    {% set dia_actual = movimiento.fecha.strftime('%d/%m/%Y') %}
+                    {% if dia_actual not in dias_unicos %}
+                        {% set _ = dias_unicos.append(dia_actual) %}
+                    {% endif %}
+                {% endfor %}
+                {{ dias_unicos|length }}
+            </div>
+            <div class="stats-label">Días Activos</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

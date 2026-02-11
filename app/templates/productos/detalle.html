@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}{{ producto.nombre }} - Sistema de Inventario{% endblock %}
+
+{% block page_title %}Detalle del Producto{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Información Principal -->
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ producto.nombre }}</h5>
+                <div class="btn-group">
+                    <a href="{{ url_for('productos.editar', id=producto.id) }}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                    <a href="{{ url_for('productos.lista') }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        {% if producto.imagen_url %}
+                        <img src="{{ url_for('static', filename='uploads/' + producto.imagen_url) }}" 
+                             alt="{{ producto.nombre }}" 
+                             class="img-fluid rounded">
+                        {% else %}
+                        <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                             style="height: 200px;">
+                            <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-8">
+                        <h4>{{ producto.nombre }}</h4>
+                        <p class="text-muted mb-2">
+                            <span class="category-color" style="background-color: {{ producto.categoria.color }}"></span>
+                            {{ producto.categoria.nombre }}
+                        </p>
+                        
+                        {% if producto.descripcion %}
+                        <p class="mb-3">{{ producto.descripcion }}</p>
+                        {% endif %}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <small class="text-muted">SKU:</small>
+                                <p><code>{{ producto.sku }}</code></p>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">Precio:</small>
+                                <p class="h4 text-primary">${{ "{:,.0f}".format(producto.precio) }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Información de Stock -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Información de Stock</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <div class="p-3">
+                            <div class="h2 {{ producto.get_estado_color() }}">
+                                {{ producto.cantidad_stock }}
+                            </div>
+                            <small class="text-muted">Stock Actual</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3">
+                            <div class="h2 text-warning">{{ producto.umbral_minimo }}</div>
+                            <small class="text-muted">Umbral Mínimo</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3">
+                            <div class="h2 text-success">{{ "{:,.0f}".format(producto.get_valor_total()) }}</div>
+                            <small class="text-muted">Valor Total</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-3">
+                    <span class="stock-status {{ producto.get_estado_color() }} px-4 py-2">
+                        {% if producto.get_estado_stock() == 'sin-stock' %}
+                            <i class="bi bi-x-circle"></i> Sin Stock
+                        {% elif producto.get_estado_stock() == 'bajo-stock' %}
+                            <i class="bi bi-exclamation-triangle"></i> Bajo Stock
+                        {% else %}
+                            <i class="bi bi-check-circle"></i> Stock Normal
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div class="col-md-4">
+        <!-- Estado del Producto -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">Estado</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Producto Activo:</span>
+                    <span class="badge {{ 'bg-success' if producto.activo else 'bg-secondary' }}">
+                        {{ 'Activo' if producto.activo else 'Inactivo' }}
+                    </span>
+                </div>
+                
+                <hr>
+                
+                <small class="text-muted d-block">Fecha de creación:</small>
+                <div>{{ producto.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}</div>
+                
+                {% if producto.fecha_actualizacion != producto.fecha_creacion %}
+                <small class="text-muted d-block mt-2">Última actualización:</small>
+                <div>{{ producto.fecha_actualizacion.strftime('%d/%m/%Y %H:%M') }}</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Acciones Rápidas -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h6 class="mb-0">Acciones Rápidas</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('movimientos.nuevo') }}?producto_id={{ producto.id }}" 
+                       class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Registrar Entrada
+                    </a>
+                    <a href="{{ url_for('movimientos.nuevo') }}?producto_id={{ producto.id }}&tipo=salida" 
+                       class="btn btn-outline-primary">
+                        <i class="bi bi-dash-circle"></i> Registrar Salida
+                    </a>
+                    <a href="{{ url_for('movimientos.lista') }}?producto_id={{ producto.id }}" 
+                       class="btn btn-outline-secondary">
+                        <i class="bi bi-clock-history"></i> Ver Historial
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Información del Sistema -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Información del Sistema</h6>
+            </div>
+            <div class="card-body">
+                <small class="text-muted d-block">ID del Producto:</small>
+                <div>{{ producto.id }}</div>
+                
+                <small class="text-muted d-block mt-2">ID de Categoría:</small>
+                <div>{{ producto.id_categoria }}</div>
+                
+                {% if producto.cantidad_stock <= producto.umbral_minimo %}
+                <div class="alert alert-warning mt-3 mb-0">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>¡Atención!</strong> Este producto tiene bajo stock y debería ser reabastecido.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

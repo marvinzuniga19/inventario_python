@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block title %}Categorías - Sistema de Inventario{% endblock %}
+
+{% block page_title %}Categorías{% endblock %}
+
+{% block content %}
+<!-- Barra de Herramientas -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h5 class="mb-0">Gestión de Categorías</h5>
+                <p class="text-muted mb-0">Organiza tus productos por categorías con colores personalizados</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{{ url_for('categorias.nuevo') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle"></i> Nueva Categoría
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Lista de Categorías -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Lista de Categorías</h5>
+    </div>
+    <div class="card-body">
+        {% if categorias.items %}
+        <div class="row">
+            {% for categoria in categorias.items %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center" 
+                         style="background-color: {{ categoria.color }}20; border-left: 4px solid {{ categoria.color }};">
+                        <div class="d-flex align-items-center">
+                            <div class="category-color me-2" style="background-color: {{ categoria.color }}; width: 20px; height: 20px;"></div>
+                            <strong>{{ categoria.nombre }}</strong>
+                        </div>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-three-dots"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('categorias.editar', id=categoria.id) }}">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="{{ url_for('categorias.eliminar', id=categoria.id) }}">
+                                        <i class="bi bi-trash"></i> Eliminar
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text text-muted">{{ categoria.descripcion or 'Sin descripción' }}</p>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div>
+                                <small class="text-muted">Productos:</small>
+                                {% set activos = [] %}
+                                {% for producto in categoria.productos %}
+                                    {% if producto.activo %}
+                                        {% set _ = activos.append(producto) %}
+                                    {% endif %}
+                                {% endfor %}
+                                <span class="badge bg-primary ms-1">{{ activos|length }}</span>
+                            </div>
+                            <small class="text-muted">
+                                Creada: {{ categoria.fecha_creacion.strftime('%d/%m/%Y') }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Paginación -->
+        {% if categorias.pages > 1 %}
+        <nav aria-label="Paginación de categorías">
+            <ul class="pagination justify-content-center">
+                {% if categorias.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('categorias.lista', page=categorias.prev_num) }}">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for page_num in categorias.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != categorias.page %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('categorias.lista', page=page_num) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if categorias.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('categorias.lista', page=categorias.next_num) }}">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-tags text-muted" style="font-size: 3rem;"></i>
+            <h5 class="text-muted mt-3">No hay categorías registradas</h5>
+            <p class="text-muted">Comienza organizando tu inventario creando tu primera categoría</p>
+            <a href="{{ url_for('categorias.nuevo') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Nueva Categoría
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Estadísticas Simplificadas -->
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="stats-icon primary">
+                <i class="bi bi-tags"></i>
+            </div>
+            <div class="stats-value">{{ categorias.total }}</div>
+            <div class="stats-label">Total Categorías</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card success">
+            <div class="stats-icon success">
+                <i class="bi bi-box"></i>
+            </div>
+            <div class="stats-value">{{ total_productos_activos or 0 }}</div>
+            <div class="stats-label">Productos Activos</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card warning">
+            <div class="stats-icon warning">
+                <i class="bi bi-palette"></i>
+            </div>
+            <div class="stats-value">{{ categorias.pages }}</div>
+            <div class="stats-label">Páginas</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card info">
+            <div class="stats-icon info">
+                <i class="bi bi-eye"></i>
+            </div>
+            <div class="stats-value">{{ categorias.items|length }}</div>
+            <div class="stats-label">Visible</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }} - Sistema de Inventario{% endblock %}
+
+{% block page_title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">{{ titulo }}</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="mb-3">
+                        {{ form.nombre.label(class="form-label") }}
+                        {{ form.nombre(class="form-control") }}
+                        {% if form.nombre.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.nombre.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.color.label(class="form-label") }}
+                        <div class="input-group">
+                            {{ form.color(class="form-control", type="color") }}
+                            <span class="input-group-text" id="color-preview" style="background-color: {{ form.color.data or '#007bff' }};">
+                                <i class="bi bi-palette"></i>
+                            </span>
+                        </div>
+                        {% if form.color.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.color.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted">Selecciona un color para identificar esta categoría</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.descripcion.label(class="form-label") }}
+                        {{ form.descripcion(class="form-control", rows="3") }}
+                        {% if form.descripcion.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.descripcion.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted">Descripción opcional para proporcionar más detalles</small>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-6">
+                            <a href="{{ url_for('categorias.lista') }}" class="btn btn-outline-secondary w-100">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="bi bi-check-circle"></i> 
+                                {% if categoria %}
+                                    Actualizar Categoría
+                                {% else %}
+                                    Crear Categoría
+                                {% endif %}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        {% if categoria %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">Detalles Actuales</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <small class="text-muted">Fecha de creación:</small>
+                        <div>{{ categoria.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted">Productos asociados:</small>
+                        <div>{{ categoria.productos|selectattr('activo')|list|length }} productos</div>
+                    </div>
+                </div>
+                
+                {% if categoria.productos|selectattr('activo')|list %}
+                <div class="mt-3">
+                    <small class="text-muted d-block mb-2">Productos en esta categoría:</small>
+                    {% for producto in categoria.productos|selectattr('activo')|list %}
+                    <span class="badge bg-light text-dark me-1">{{ producto.nombre }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const colorInput = document.querySelector('input[type="color"]');
+    const colorPreview = document.getElementById('color-preview');
+    
+    if (colorInput && colorPreview) {
+        colorInput.addEventListener('input', function(e) {
+            colorPreview.style.backgroundColor = e.target.value;
+        });
+    }
+});
+</script>
+{% endblock %}
