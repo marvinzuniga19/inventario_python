@@ -19,6 +19,10 @@ class Usuario(UserMixin, db.Model):
     # Moneda preferida del usuario
     moneda_preferida_id = db.Column(db.Integer, db.ForeignKey('monedas.id'), default=1)
     
+    # Tema preferido del usuario
+    tema_preferido = db.Column(db.String(20), default='default')  # default, blue_ocean, green_forest, etc.
+    sidebar_config = db.Column(db.JSON, default={})  # Configuración personalizada de sidebar
+    
     # Relaciones
     movimientos = db.relationship('Movimiento', backref='usuario', lazy=True)
     moneda_preferida = db.relationship('Moneda', foreign_keys=[moneda_preferida_id], back_populates='usuarios_preferencia')
@@ -40,6 +44,14 @@ class Usuario(UserMixin, db.Model):
             # Si el usuario no tiene moneda preferida o está inactiva, usar la default
             from .moneda import Moneda
             return Moneda.get_default()
+    
+    def get_tema_preferido(self):
+        """Obtener el tema preferido del usuario"""
+        return self.tema_preferido or 'default'
+    
+    def set_tema_preferido(self, tema):
+        """Establecer el tema preferido del usuario"""
+        self.tema_preferido = tema
     
     def __repr__(self):
         return f'<Usuario {self.email}>'

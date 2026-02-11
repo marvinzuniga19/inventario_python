@@ -34,6 +34,16 @@ class PerfilForm(FlaskForm):
     nombre = StringField('Nombre', validators=[DataRequired(), Length(min=2, max=100)])
     apellido = StringField('Apellido', validators=[DataRequired(), Length(min=2, max=100)])
     email = StringField('Email', validators=[DataRequired(), Email()])
+    tema_preferido = SelectField('Tema del Sidebar', choices=[
+        ('default', 'Azul Default'),
+        ('blue_ocean', 'Océano Azul'),
+        ('green_forest', 'Bosque Verde'),
+        ('purple_night', 'Noche Púrpura'),
+        ('orange_sunset', 'Atardecer Naranja'),
+        ('dark_minimal', 'Oscuro Minimalista'),
+        ('rose_modern', 'Rosa Moderno'),
+        ('sky_light', 'Cielo Azul Claro')
+    ], default='default')
     
     def validate_email(self, email):
         if email.data != self.usuario_original.email:

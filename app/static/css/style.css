@@ -10,6 +10,20 @@
     --dark-color: #1f2937;
     --light-bg: #f9fafb;
     --border-color: #e5e7eb;
+    
+    /* Variables de tema para el sidebar */
+    --sidebar-gradient-start: #4f46e5;
+    --sidebar-gradient-end: #6366f1;
+    --sidebar-text-color: white;
+    --sidebar-text-hover: rgba(255, 255, 255, 0.9);
+    --sidebar-text-inactive: rgba(255, 255, 255, 0.8);
+    --sidebar-bg-hover: rgba(255, 255, 255, 0.1);
+    --sidebar-bg-active: rgba(255, 255, 255, 0.15);
+    --sidebar-border-color: rgba(255, 255, 255, 0.2);
+    --sidebar-header-border: rgba(255, 255, 255, 0.1);
+    --sidebar-footer-border: rgba(255, 255, 255, 0.1);
+    --sidebar-active-indicator: white;
+    --sidebar-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
 }
 
 * {
@@ -30,19 +44,19 @@ body {
     left: 0;
     height: 100vh;
     width: var(--sidebar-width);
-    background: linear-gradient(135deg, var(--primary-color), #6366f1);
-    color: white;
+    background: linear-gradient(135deg, var(--sidebar-gradient-start), var(--sidebar-gradient-end));
+    color: var(--sidebar-text-color);
     z-index: 1000;
     display: flex;
     flex-direction: column;
     transition: transform 0.3s ease;
     border-radius: 0 16px 16px 0;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--sidebar-shadow);
 }
 
 .sidebar-header {
     padding: 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--sidebar-header-border);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -78,20 +92,20 @@ body {
     align-items: center;
     gap: 0.75rem;
     padding: 0.875rem 1.5rem;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--sidebar-text-inactive);
     text-decoration: none;
     transition: all 0.2s ease;
     position: relative;
 }
 
 .menu-link:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: white;
+    background-color: var(--sidebar-bg-hover);
+    color: var(--sidebar-text-hover);
 }
 
 .menu-link.active {
-    background-color: rgba(255, 255, 255, 0.15);
-    color: white;
+    background-color: var(--sidebar-bg-active);
+    color: var(--sidebar-text-color);
 }
 
 .menu-link.active::before {
@@ -101,7 +115,7 @@ body {
     top: 0;
     height: 100%;
     width: 4px;
-    background-color: white;
+    background-color: var(--sidebar-active-indicator);
 }
 
 .menu-link i {
@@ -116,7 +130,7 @@ body {
 
 .sidebar-footer {
     padding: 1rem 1.5rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid var(--sidebar-footer-border);
 }
 
 .user-info {
@@ -157,14 +171,14 @@ body {
     width: 36px;
     height: 36px;
     border-radius: 8px;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--sidebar-text-inactive);
     text-decoration: none;
     transition: all 0.2s ease;
 }
 
 .action-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: white;
+    background-color: var(--sidebar-bg-hover);
+    color: var(--sidebar-text-hover);
 }
 
 /* Main Content */

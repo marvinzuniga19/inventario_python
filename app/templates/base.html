@@ -170,6 +170,16 @@
           data-currency-symbol="{{ moneda_actual.simbolo }}"
           data-currency-locale="{{ moneda_actual.locale }}">
     {% endif %}
+    
+    <!-- Theme Management -->
+    <script src="{{ url_for('static', filename='js/themes.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/theme-manager.js') }}"></script>
+    
+    <!-- Meta tags para theme manager -->
+    {% if current_user.is_authenticated %}
+    <meta name="current-theme" 
+          data-theme-name="{{ current_user.get_tema_preferido() }}">
+    {% endif %}
     {% endif %}
     
     {% block scripts %}{% endblock %}

@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block page_title %}Mi Perfil{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>
+                    <i class="bi bi-person-circle"></i>
+                    Mi Perfil
+                </h2>
+                <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i>
+                    Volver al Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs de configuración -->
+    <ul class="nav nav-tabs" id="perfilTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#datos-basicos" type="button" role="tab">
+                <i class="bi bi-person"></i> Datos Básicos
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#personalizacion" type="button" role="tab">
+                <i class="bi bi-palette"></i> Personalización
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#seguridad" type="button" role="tab">
+                <i class="bi bi-shield-lock"></i> Seguridad
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="perfilTabContent">
+        <!-- Tab 1: Datos Básicos -->
+        <div class="tab-pane fade show active" id="datos-basicos" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-person"></i>
+                        Información Personal
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.nombre.label(class="form-label") }}
+                                    {{ form.nombre(class="form-control") }}
+                                    {% if form.nombre.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.nombre.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.apellido.label(class="form-label") }}
+                                    {{ form.apellido(class="form-control") }}
+                                    {% if form.apellido.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.apellido.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control") }}
+                            {% if form.email.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.email.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Rol</label>
+                                    <input type="text" class="form-control" value="{{ current_user.rol.title() }}" readonly>
+                                    <small class="text-muted">El rol solo puede ser modificado por un administrador</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Fecha de Registro</label>
+                                    <input type="text" class="form-control" value="{{ current_user.fecha_creacion.strftime('%d/%m/%Y') }}" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i>
+                                Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Personalización -->
+        <div class="tab-pane fade" id="personalizacion" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-palette"></i>
+                        Personalización de Interfaz
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Selector de Moneda -->
+                    <div class="mb-4">
+                        <h6 class="mb-3">
+                            <i class="bi bi-currency-exchange"></i>
+                            Moneda Preferida
+                        </h6>
+                        {% include 'partials/currency_selector.html' %}
+                    </div>
+                    
+                    <!-- Selector de Temas -->
+                    <div class="mt-4">
+                        <h6 class="mb-3">
+                            <i class="bi bi-paint-bucket"></i>
+                            Tema del Sidebar
+                        </h6>
+                        {% include 'partials/theme_selector.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Seguridad -->
+        <div class="tab-pane fade" id="seguridad" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-shield-lock"></i>
+                        Seguridad de la Cuenta
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="mb-3">Cambiar Contraseña</h6>
+                            <p class="text-muted mb-3">
+                                Para cambiar tu contraseña, ingresa la contraseña actual y la nueva contraseña.
+                            </p>
+                            <a href="{{ url_for('auth.cambiar_password') }}" class="btn btn-outline-primary">
+                                <i class="bi bi-key"></i>
+                                Cambiar Contraseña
+                            </a>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="mb-3">Información de Sesión</h6>
+                            <div class="mb-2">
+                                <small class="text-muted">Último inicio de sesión:</small><br>
+                                <strong>
+                                    {% if current_user.fecha_ultimo_login %}
+                                        {{ current_user.fecha_ultimo_login.strftime('%d/%m/%Y %H:%M') }}
+                                    {% else %}
+                                        No disponible
+                                    {% endif %}
+                                </strong>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Estado de la cuenta:</small><br>
+                                <span class="badge {% if current_user.activo %}bg-success{% else %}bg-danger{% endif %}">
+                                    {% if current_user.activo %}Activa{% else %}Inactiva{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Cargar definiciones de temas -->
+<script src="{{ url_for('static', filename='js/themes.js') }}"></script>
+
+<!-- Script para tabs -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Activar tab correcto si viene de hash
+    const hash = window.location.hash;
+    if (hash) {
+        const tabButton = document.querySelector(`[data-bs-target="${hash}"]`);
+        if (tabButton) {
+            const tab = new bootstrap.Tab(tabButton);
+            tab.show();
+        }
+    }
+    
+    // Actualizar hash cuando cambia el tab
+    const tabButtons = document.querySelectorAll('[data-bs-toggle="tab"]');
+    tabButtons.forEach(button => {
+        button.addEventListener('shown.bs.tab', function (e) {
+            const target = e.target.getAttribute('data-bs-target');
+            window.location.hash = target;
+        });
+    });
+});
+</script>
+{% endblock %}
