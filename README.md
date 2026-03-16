@@ -60,7 +60,7 @@ Una aplicación web moderna y responsiva para la gestión de inventario de peque
 - **Flask-Login** para autenticación
 - **Flask-WTF** para formularios seguros
 - **Flask-Migrate** para migraciones de base de datos
-- **SQLite** para base de datos ligera y portable
+- **PostgreSQL** como base de datos (configurable via variable de entorno)
 
 ### Frontend
 - **Bootstrap 5** para diseño responsivo
@@ -73,6 +73,8 @@ Una aplicación web moderna y responsiva para la gestión de inventario de peque
 ### Prerrequisitos
 - Python 3.8 o superior (probado con Python 3.14.2)
 - pip (gestor de paquetes de Python)
+- PostgreSQL 12+ (para producción)
+- Crear archivo `.env` con la URL de conexión a PostgreSQL
 
 ### Pasos de Instalación
 
@@ -97,17 +99,24 @@ Una aplicación web moderna y responsiva para la gestión de inventario de peque
    pip install -r requirements.txt
    ```
 
-4. **Inicializar base de datos:**
+4. **Configurar base de datos:**
+
+   Crear archivo `.env` en la raíz del proyecto:
+   ```
+   DATABASE_URL=postgresql://usuario:password@localhost:5432/nombre_db
+   ```
+
+5. **Inicializar base de datos:**
    ```bash
    python init_db.py
    ```
 
-5. **Iniciar aplicación:**
+6. **Iniciar aplicación:**
    ```bash
    python run.py
    ```
 
-6. **Acceder a la aplicación:**
+7. **Acceder a la aplicación:**
    - URL: `http://localhost:5000`
    - Email: `admin@inventario.com`
    - Contraseña: `admin123`
@@ -118,6 +127,8 @@ Una aplicación web moderna y responsiva para la gestión de inventario de peque
 - **Entorno virtual:** Es obligatorio usar un entorno virtual para evitar conflictos de dependencias
 - **Instalación automática:** Se recomienda usar `pip install -r requirements.txt` para instalar todas las dependencias con las versiones correctas
 - **Base de datos:** Se crea automáticamente la primera vez que se ejecuta `init_db.py`
+- **PostgreSQL:** Requiere PostgreSQL instalado y configurado. La variable `DATABASE_URL` en `.env` es obligatoria
+- **Archivo .env:** No se incluye en el repositorio. Cada desarrollador debe crear el suyo propio
 
 ## 📁 Estructura del Proyecto
 
@@ -188,7 +199,8 @@ inventario_app/
 - **Sistema operativo:** Compatible con Windows, macOS y Linux
 
 ### Base de Datos
-- **SQLite** por defecto (fácil para pequeñas empresas)
+- **PostgreSQL** como base de datos principal
+- Configurable via variable de entorno `DATABASE_URL`
 - **Modelos relacionales** con SQLAlchemy
 - **Migraciones automáticas** con Flask-Migrate
 - **Integridad referencial** garantizada
